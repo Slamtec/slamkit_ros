@@ -97,11 +97,11 @@ int main(int argc, char * argv[])
     std::string channel_type;
     std::string frame_id;
 
-    int usb_venderId_cp0;
-    int usb_productId_cp0;
-    int usb_interfaceId_cp0;
-    int usb_txEndpoint_cp0;
-    int usb_rxEndpoint_cp0;
+    int usb_venderId_slamkit;
+    int usb_productId_slamkit;
+    int usb_interfaceId_slamkit;
+    int usb_txEndpoint_slamkit;
+    int usb_rxEndpoint_slamkit;
     
     // Initialize Publisher
     ros::NodeHandle nh;
@@ -112,12 +112,12 @@ int main(int argc, char * argv[])
     ros::NodeHandle nh_private("~"); 
     nh_private.param<std::string>("channel_type", channel_type, "usb");
 
-    // cp0
-    nh_private.param<int>("usb_venderId_cp0", usb_venderId_cp0, 64719);
-    nh_private.param<int>("usb_productId_cp0", usb_productId_cp0, 61696);
-    nh_private.param<int>("usb_interfaceId_cp0", usb_interfaceId_cp0, 3);
-    nh_private.param<int>("usb_txEndpoint_cp0", usb_txEndpoint_cp0, 5);
-    nh_private.param<int>("usb_rxEndpoint_cp0", usb_rxEndpoint_cp0, 5);
+    // slamkit
+    nh_private.param<int>("usb_venderId_slamkit", usb_venderId_slamkit, 64719);
+    nh_private.param<int>("usb_productId_slamkit", usb_productId_slamkit, 61696);
+    nh_private.param<int>("usb_interfaceId_slamkit", usb_interfaceId_slamkit, 3);
+    nh_private.param<int>("usb_txEndpoint_slamkit", usb_txEndpoint_slamkit, 5);
+    nh_private.param<int>("usb_rxEndpoint_slamkit", usb_rxEndpoint_slamkit, 5);
     nh_private.param<std::string>("frame_id", frame_id, "imu");
 
     // echo chassis version info 
@@ -128,13 +128,13 @@ int main(int argc, char * argv[])
 
     sl_result  op_result;
 
-    std::shared_ptr<ICp0Driver> slamkit_drv = createCp0Driver();
+    std::shared_ptr<ISlamkitDriver> slamkit_drv = createSlamkitDriver();
 
     // usb communication
     if (channel_type == "usb")
     {
-        // CP0 usb channel connect
-        auto _channel = createUSBChannel(usb_venderId_cp0, usb_productId_cp0, usb_interfaceId_cp0, usb_txEndpoint_cp0, usb_rxEndpoint_cp0);
+        // SLAMKIT usb channel connect
+        auto _channel = createUSBChannel(usb_venderId_slamkit, usb_productId_slamkit, usb_interfaceId_slamkit, usb_txEndpoint_slamkit, usb_rxEndpoint_slamkit);
         if (SL_IS_FAIL((slamkit_drv)->connect(_channel)))
         {
             ROS_ERROR("Error, cannot connect to slamkit.");

@@ -2,11 +2,11 @@
   <node name="slamkitNode"          pkg="slamkit_ros"  type="slamkitNode" output="screen">
   <param name="channel_type"         type="string" value="usb"/>  
   <param name="frame_id"             type="string" value="imu"/> 
-  <param name="usb_venderId_cp0"     type="int"    value="64719"/>
-  <param name="usb_productId_cp0"    type="int"    value="61696"/>
-  <param name="usb_interfaceId_cp0"  type="int"    value="3"/>
-  <param name="usb_txEndpoint_cp0"   type="int"    value="5"/>
-  <param name="usb_rxEndpoint_cp0"   type="int"    value="5"/>
+  <param name="usb_venderId_slamkit"     type="int"    value="64719"/>
+  <param name="usb_productId_slamkit"    type="int"    value="61696"/>
+  <param name="usb_interfaceId_slamkit"  type="int"    value="3"/>
+  <param name="usb_txEndpoint_slamkit"   type="int"    value="5"/>
+  <param name="usb_rxEndpoint_slamkit"   type="int"    value="5"/>
 
   </node>
 </launch>
