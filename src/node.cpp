@@ -40,7 +40,7 @@
 //#include <geometry_msgs/TransformStamped.h>
 //#include <sensor_msgs/Range.h>
 #include <sensor_msgs/Imu.h>
-#include <sl_chassis.h>
+#include <sl_slamkit.h>
 
 #define DEG2RAD(x) ((x)*M_PI / 180.0)
 #define SHIFT15BITS 32768.00
@@ -120,10 +120,10 @@ int main(int argc, char * argv[])
     nh_private.param<int>("usb_rxEndpoint_slamkit", usb_rxEndpoint_slamkit, 5);
     nh_private.param<std::string>("frame_id", frame_id, "imu");
 
-    // echo chassis version info 
-    int ver_major = SL_CHASSIS_SDK_VERSION_MAJOR;
-    int ver_minor = SL_CHASSIS_SDK_VERSION_MINOR;
-    int ver_patch = SL_CHASSIS_SDK_VERSION_PATCH;   
+    // echo slamkit version info 
+    int ver_major = SL_SLAMKIT_SDK_VERSION_MAJOR;
+    int ver_minor = SL_SLAMKIT_SDK_VERSION_MINOR;
+    int ver_patch = SL_SLAMKIT_SDK_VERSION_PATCH;   
     ROS_INFO("slamkit running on ROS package slamkit_ros, SDK Version:%d.%d.%d",ver_major,ver_minor,ver_patch);
 
     sl_result  op_result;
