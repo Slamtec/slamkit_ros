@@ -1,0 +1,3 @@
+[submodule "sdk/slamkit"]
+	path = sdk/slamkit
+	url = https://git.eng.slamtec.com/slamware/drivers/slamkit.git
