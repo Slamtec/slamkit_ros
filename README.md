@@ -2,7 +2,11 @@
 
 ROS node and test application for slamkit
 
-## How to build rplidar ros package
+## Dependency
+
+Slamkit use libusb-1.0 to comunicate with host currently, before build slamkit ros package, make sure libusb-1.0 has been installed.
+
+## How to build slamkit ros package
 
    1) Clone this project to your catkin's workspace src folder
    2) Running catkin_make to build slamkitNode and slamkitNodeClient
@@ -17,7 +21,7 @@ There're two ways to run slamkit ros package
 roslaunch slamkit_ros test_slamkit.lanuch
 ```
 
-### II. Run rplidar node only
+### II. Run slamkit node only
 
 ```bash
 roslaunch slamkit_ros slamkit_usb.launch
