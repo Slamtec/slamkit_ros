@@ -105,7 +105,7 @@ int main(int argc, char * argv[])
     
     // Initialize Publisher
     ros::NodeHandle nh;
-    ros::Publisher imu_pub = nh.advertise<sensor_msgs::Imu>("imu", 100);
+    ros::Publisher imu_pub = nh.advertise<sensor_msgs::Imu>("imu/data_raw", 100);
     
 
     // get param
