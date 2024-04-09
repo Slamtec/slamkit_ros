@@ -77,16 +77,5 @@ int main(int argc, char **argv)
     degree_pub = nh.advertise<geometry_msgs::Vector3Stamped>("imu/angles_degree", 100);
 
     ros::spin();
-    // ros::Rate rate(200);  // loop rate
-    // while (ros::ok())
-    // {
-    //     // 3. Publish IMU Raw topic
-
-    //     publish_imu(&imu_pub, imu_data, frame_id);
-        
-    //     ros::spinOnce();  
-    //     rate.sleep();     
-    // }
-
     return 0;
 }

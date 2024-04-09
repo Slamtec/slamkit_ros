@@ -133,8 +133,8 @@ void publish_imu_processed(ros::Publisher* pub, const sl_slamkit_read_imu_proces
     imu_processed.header.stamp = ros::Time::now();
     imu_processed.header.frame_id = "imu_processed";
 
-    imu_processed.vector.x =  gyro_sum_x * 180.0 / 3.141592654;
-    imu_processed.vector.y =  gyro_sum_y * 180.0 / 3.141592654;
+    imu_processed.vector.x =  0;
+    imu_processed.vector.y =  0;
     imu_processed.vector.z =  gyro_sum_z * 180.0 / 3.141592654;
 
 
