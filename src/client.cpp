@@ -26,7 +26,7 @@
  *
  */
 /*
- *  RoboPeak LIDAR System
+ *  
  *  RPlidar ROS Node client test app
  *
  *  Copyright 2009 - 2014 RoboPeak Team
@@ -37,20 +37,56 @@
 
 #include "ros/ros.h"
 #include "sensor_msgs/Imu.h"
+#include <geometry_msgs/Vector3Stamped.h>
 
-void imuCallback(const sensor_msgs::Imu::ConstPtr& imu)
+#define MY_PI   (3.141592654)
+
+ros::Publisher degree_pub;
+
+void imuCallback(const geometry_msgs::Vector3Stamped::ConstPtr& angle_rad)
 {
-    ROS_INFO("I heard a slamkit %s[%u]:", imu->header.frame_id.c_str(), imu->header.seq);
+    //ROS_INFO("I heard a slamkit %s[%u]:", imu->header.frame_id.c_str(), imu->header.seq);
+
+    //ROS_INFO("I heard a slamkit %s[%u]:", angle_rad->header.frame_id.c_str(), angle_rad->header.seq);
+
+
+    double angle_degree_roll = angle_rad->vector.x * 180.0 / MY_PI;
+    double angle_degree_pitch = angle_rad->vector.y * 180.0 / MY_PI;
+    double angle_degree_yaw = angle_rad->vector.z * 180.0 / MY_PI;
+
+
+    geometry_msgs::Vector3Stamped angle;
+    
+    angle.header.stamp = ros::Time::now();
+    angle.header.frame_id = "angle_degree";
+    angle.vector.x =  angle_degree_roll;
+    angle.vector.y =  angle_degree_pitch;
+    angle.vector.z =  angle_degree_yaw;
+
+    degree_pub.publish(angle);
+
 }
 
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "slamkit_node_client");
-    ros::NodeHandle n;
+    ros::NodeHandle nh;
 
-    ros::Subscriber sub = n.subscribe<sensor_msgs::Imu>("/imu", 1000, imuCallback);
+    ros::Subscriber sub = nh.subscribe<geometry_msgs::Vector3Stamped>("imu/rpy/filtered", 100, imuCallback);
+
+    degree_pub = nh.advertise<geometry_msgs::Vector3Stamped>("imu/angles_degree", 100);
 
     ros::spin();
+    // ros::Rate rate(200);  // loop rate
+    // while (ros::ok())
+    // {
+    //     // 3. Publish IMU Raw topic
+
+    //     publish_imu(&imu_pub, imu_data, frame_id);
+        
+    //     ros::spinOnce();  
+    //     rate.sleep();     
+    // }
 
     return 0;
 }

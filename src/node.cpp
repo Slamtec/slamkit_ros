@@ -40,7 +40,9 @@
 //#include <geometry_msgs/TransformStamped.h>
 //#include <sensor_msgs/Range.h>
 #include <sensor_msgs/Imu.h>
+#include <sensor_msgs/MagneticField.h>
 #include <sl_slamkit.h>
+#include <geometry_msgs/Vector3Stamped.h>
 
 #define DEG2RAD(x) ((x)*M_PI / 180.0)
 #define SHIFT15BITS 32768.00
@@ -48,9 +50,9 @@
 using namespace sl;
 
 
-
+static sl_u32 last_ts_ms = 0; 
 // ------------------------- Part3 Raw IMU -----------------
-void publish_imu(ros::Publisher* pub, const sl_imu_raw_data_t& imu_data, std::string& frame_id)
+void publish_imu(ros::Publisher* pub, ros::Publisher* pub_mag, const sl_imu_raw_data_t& imu_data, std::string& frame_id)
 {
     
     // according to datasheet,sensitivity scale factor is 16384, +-2g
@@ -60,17 +62,24 @@ void publish_imu(ros::Publisher* pub, const sl_imu_raw_data_t& imu_data, std::st
     
     //double acc_x_test = static_cast<double>(imu_data.acc_x);
 
-    double gyro_x = imu_data.gyro_x / SHIFT15BITS * 500 / 180 * 3.1415926;
-    double gyro_y = imu_data.gyro_y / SHIFT15BITS * 500 / 180 * 3.1415926;
-    double gyro_z = imu_data.gyro_z / SHIFT15BITS * 500 / 180 * 3.1415926;
+    double gyro_x = imu_data.gyro_x / SHIFT15BITS * 2000 / 180 * 3.1415926;
+    double gyro_y = imu_data.gyro_y / SHIFT15BITS * 2000 / 180 * 3.1415926;
+    double gyro_z = imu_data.gyro_z / SHIFT15BITS * 2000 / 180 * 3.1415926;
 
-    double mag_x = imu_data.mag_x / 65536.0;
-    double mag_y = imu_data.mag_y / 65536.0;
-    double mag_z = imu_data.mag_z / 65536.0;
+
+    double mag_x = imu_data.mag_x * 4900 / SHIFT15BITS / 1000000;
+    double mag_y = imu_data.mag_y * 4900 / SHIFT15BITS / 1000000;
+    double mag_z = imu_data.mag_z * 4900 / SHIFT15BITS / 1000000;
 
     // ROS_INFO("Received velocity message: raw_acc_x: %d, acc_x_test: %d, acc_y: %d, acc_z: %d", acc_x, acc_y, acc_y, acc_z);
     // ROS_INFO("Received velocity message: gyro_x: %d, gyro_x: %d, gyro_x: %d", imu_data.gyro_x , imu_data.gyro_y , imu_data.gyro_z);
     // ROS_INFO("Received velocity message: acc_x: %d, acc_x: %d, acc_x: %d", imu_data.acc_x , imu_data.acc_y , imu_data.acc_z);
+    
+    if (last_ts_ms == imu_data.timestamp)
+    {
+        return;
+    }
+
     sensor_msgs::Imu Imu;
     
     Imu.header.stamp = ros::Time::now();
@@ -84,7 +93,55 @@ void publish_imu(ros::Publisher* pub, const sl_imu_raw_data_t& imu_data, std::st
     Imu.angular_velocity.z = gyro_z;
 
     pub->publish(Imu);
+
+    sensor_msgs::MagneticField mag;
+    
+    mag.header.stamp = ros::Time::now();
+    mag.header.frame_id = "magnetic";
+    mag.magnetic_field .x =  mag_x;
+    mag.magnetic_field .y =  mag_y;
+    mag.magnetic_field .z =  mag_z;
+
+    pub_mag->publish(mag);
+
+    last_ts_ms = imu_data.timestamp;
 }
+
+void publish_imu_processed(ros::Publisher* pub, const sl_slamkit_read_imu_processed_response_t& PImu_resp)
+{
+    
+    double acc_x = PImu_resp.acc.x_d4/10000.0;
+    double acc_y = PImu_resp.acc.y_d4/10000.0;
+    double acc_z = PImu_resp.acc.z_d4/10000.0;
+
+    double gyro_x = DEG2RAD(PImu_resp.gyro.wx_d4/10000.0);
+    double gyro_y = DEG2RAD(PImu_resp.gyro.wy_d4/10000.0);
+    double gyro_z = DEG2RAD(PImu_resp.gyro.wz_d4/10000.0);
+
+    double gyro_sum_x = (std::int32_t)PImu_resp.gyro.sum_x_d4/10000.0;
+    double gyro_sum_y = (std::int32_t)PImu_resp.gyro.sum_y_d4/10000.0;
+    double gyro_sum_z = (std::int32_t)PImu_resp.gyro.sum_z_d4/10000.0;
+
+    // double roll = fmod(gyro_sum_x,2*M_PI);
+    // double pitch= fmod(gyro_sum_x,2*M_PI);
+    // double yaw = fmod(gyro_sum_x,2*M_PI);
+
+    // ROS_INFO("Received linear acceleration message:  acc_x: %f, acc_y: %f, acc_z: %f,",  acc_x, acc_y, acc_z);
+    // ROS_INFO("Received angular velocity message:  gyro_x: %f, gyro_y: %f, gyro_z: %f,",  gyro_x, gyro_y, gyro_z);
+    // ROS_INFO("Received angular velocity message:  gyro_sum_x: %f, gyro_sum_y: %f, gyro_sum_z: %f",  gyro_sum_x, gyro_sum_y, gyro_sum_z);
+    geometry_msgs::Vector3Stamped imu_processed;
+    imu_processed.header.stamp = ros::Time::now();
+    imu_processed.header.frame_id = "imu_processed";
+
+    imu_processed.vector.x =  gyro_sum_x * 180.0 / 3.141592654;
+    imu_processed.vector.y =  gyro_sum_y * 180.0 / 3.141592654;
+    imu_processed.vector.z =  gyro_sum_z * 180.0 / 3.141592654;
+
+
+    pub->publish(imu_processed);
+
+}
+
 
 
 //***************************************** Main Function ****************************************************8
@@ -106,6 +163,8 @@ int main(int argc, char * argv[])
     // Initialize Publisher
     ros::NodeHandle nh;
     ros::Publisher imu_pub = nh.advertise<sensor_msgs::Imu>("imu/data_raw", 100);
+    ros::Publisher imu_processed_pub = nh.advertise<geometry_msgs::Vector3Stamped>("imu/processed_yaw", 100);
+    ros::Publisher mag_pub = nh.advertise<sensor_msgs::MagneticField>("imu/mag", 100);
     
 
     // get param
@@ -150,8 +209,12 @@ int main(int argc, char * argv[])
     // define parameters
     sl_imu_raw_data_t imu_data;
 
+    sl_slamkit_read_imu_processed_request_t req;
+    sl_slamkit_read_imu_processed_response_t processed_data;
+
+    req.motion_hint_bitmap = SLAMKIT_REQUEST_MOTION_HINT_BITMAP_MOTION_BIT;
     // main loop
-    ros::Rate rate(200);  // loop rate
+    ros::Rate rate(460);  // loop rate
     while (ros::ok())
     {
         // 3. Publish IMU Raw topic
@@ -160,8 +223,16 @@ int main(int argc, char * argv[])
         {
             ROS_ERROR("can not get Imu Raw Data.\n");
         }
-        publish_imu(&imu_pub, imu_data, frame_id);
-        
+        publish_imu(&imu_pub, &mag_pub, imu_data, frame_id);
+        //publish_mag(&mag_pub, imu_data);
+
+        op_result = slamkit_drv->set_motion_hit_and_get_imu_processed(req, processed_data);
+        if (SL_IS_FAIL(op_result))
+        {
+            ROS_ERROR("can not get Imu processed Data.\n");
+        }
+        publish_imu_processed(&imu_processed_pub, processed_data);
+
         ros::spinOnce();  
         rate.sleep();     
     }
