@@ -3,6 +3,7 @@
 ROS node and test application for slamkit
 
 ## Dependency
+
 This project need the following dependency:
 
 1. libusb-1.0-0-dev
@@ -119,6 +120,35 @@ The rviz will use /imu/data which published from complementary_filter_node and d
 
 If want to view the roll/pich/yaw data, start another teminal and echo the following topic:
 
+- view imu msg (sensor_msgs/Imu) from complementary_filter_node
+
+```bash
+yuan@yuan ~/works/slamkit_ros_ws $ rostopic echo /imu/data
+header: 
+  seq: 67355
+  stamp: 
+    secs: 1712893929
+    nsecs: 799465854
+  frame_id: "imu"
+orientation: 
+  x: 0.3294100186970593
+  y: -0.01334335189830093
+  z: 0.1402511003896779
+  w: -0.9336169575268038
+orientation_covariance: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+angular_velocity: 
+  x: -0.004261057671440972
+  y: 0.02769687486436632
+  z: -0.008522115342881944
+angular_velocity_covariance: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+linear_acceleration: 
+  x: 0.74708251953125
+  y: -5.19010009765625
+  z: 6.66392822265625
+linear_acceleration_covariance: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+---
+```
+
 - view roll/pich/yaw in rad
 
 ```bash
@@ -150,5 +180,23 @@ vector:
   x: -29.359611349189777
   y: -48.705977758347366
   z: 14.224317662550938
+---
+```
+
+
+### III. View slamkit processed yaw (in degree)
+
+```bash
+yuan@yuan ~ $ rostopic echo /imu/processed_yaw 
+header: 
+  seq: 8217
+  stamp: 
+    secs: 1712893652
+    nsecs: 718455979
+  frame_id: "imu_processed"
+vector: 
+  x: 0.0
+  y: 0.0
+  z: 1.6558480277118701
 ---
 ```
