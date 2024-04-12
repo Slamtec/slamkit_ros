@@ -17,6 +17,11 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
 )
 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LIBUSB REQUIRED libusb-1.0)
+include_directories(${LIBUSB_INCLUDE_DIRS})
+link_directories(${LIBUSB_LIBRARY_DIRS})
+
 include_directories(
   ${SLAMKITSDK_PATH}/include
   ${SLAMKITSDK_PATH}/src
@@ -26,10 +31,10 @@ include_directories(
 catkin_package()
 
 add_executable(slamkitNode src/node.cpp ${SLAMKITSDK_SRC})
-target_link_libraries(slamkitNode ${catkin_LIBRARIES} usb-1.0)
+target_link_libraries(slamkitNode ${catkin_LIBRARIES} ${LIBUSB_LIBRARIES})
 
 add_executable(slamkitNodeClient src/client.cpp)
-target_link_libraries(slamkitNodeClient ${catkin_LIBRARIES} usb-1.0)
+target_link_libraries(slamkitNodeClient ${catkin_LIBRARIES} ${LIBUSB_LIBRARIES})
 
 install(TARGETS slamkitNode slamkitNodeClient
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
