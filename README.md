@@ -89,7 +89,7 @@ topic:
 ### II. Run slamkit node and imu filter node
 
 ```bash
-roslaunch slamkit_usb_imu_filter.launch
+roslaunch slamkit_ros slamkit_usb_imu_filter.launch
 ```
 
 The complementary_filter_node in imu tools will start at the same time, and the topics are:
