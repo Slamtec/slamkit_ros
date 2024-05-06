@@ -51,10 +51,17 @@ using namespace sl;
 
 
 static sl_u32 last_ts_ms = 0; 
-// ------------------------- Part3 Raw IMU -----------------
+static sl_u32 processed_last_ts_ms = 0;
+
+
+// ------------------------- Part Raw IMU -----------------
 void publish_imu(ros::Publisher* pub, ros::Publisher* pub_mag, const sl_imu_raw_data_t& imu_data, std::string& frame_id)
 {
-    
+    if (last_ts_ms == imu_data.timestamp)
+    {
+        return;
+    }
+
     // according to datasheet,sensitivity scale factor is 16384, +-2g
     double acc_x = imu_data.acc_x / SHIFT15BITS * 2 * 9.8;
     double acc_y = imu_data.acc_y / SHIFT15BITS * 2 * 9.8;
@@ -70,15 +77,6 @@ void publish_imu(ros::Publisher* pub, ros::Publisher* pub_mag, const sl_imu_raw_
     double mag_x = imu_data.mag_x * 4900 / SHIFT15BITS / 1000000;
     double mag_y = imu_data.mag_y * 4900 / SHIFT15BITS / 1000000;
     double mag_z = imu_data.mag_z * 4900 / SHIFT15BITS / 1000000;
-
-    // ROS_INFO("Received velocity message: raw_acc_x: %d, acc_x_test: %d, acc_y: %d, acc_z: %d", acc_x, acc_y, acc_y, acc_z);
-    // ROS_INFO("Received velocity message: gyro_x: %d, gyro_x: %d, gyro_x: %d", imu_data.gyro_x , imu_data.gyro_y , imu_data.gyro_z);
-    // ROS_INFO("Received velocity message: acc_x: %d, acc_x: %d, acc_x: %d", imu_data.acc_x , imu_data.acc_y , imu_data.acc_z);
-    
-    if (last_ts_ms == imu_data.timestamp)
-    {
-        return;
-    }
 
     sensor_msgs::Imu Imu;
     
@@ -109,7 +107,11 @@ void publish_imu(ros::Publisher* pub, ros::Publisher* pub_mag, const sl_imu_raw_
 
 void publish_imu_processed(ros::Publisher* pub, const sl_slamkit_read_imu_processed_response_t& PImu_resp)
 {
-    
+    if (processed_last_ts_ms == PImu_resp.timestamp)
+    {
+        return;
+    }
+   
     double acc_x = PImu_resp.acc.x_d4/10000.0;
     double acc_y = PImu_resp.acc.y_d4/10000.0;
     double acc_z = PImu_resp.acc.z_d4/10000.0;
@@ -122,13 +124,6 @@ void publish_imu_processed(ros::Publisher* pub, const sl_slamkit_read_imu_proces
     double gyro_sum_y = (std::int32_t)PImu_resp.gyro.sum_y_d4/10000.0;
     double gyro_sum_z = (std::int32_t)PImu_resp.gyro.sum_z_d4/10000.0;
 
-    // double roll = fmod(gyro_sum_x,2*M_PI);
-    // double pitch= fmod(gyro_sum_x,2*M_PI);
-    // double yaw = fmod(gyro_sum_x,2*M_PI);
-
-    // ROS_INFO("Received linear acceleration message:  acc_x: %f, acc_y: %f, acc_z: %f,",  acc_x, acc_y, acc_z);
-    // ROS_INFO("Received angular velocity message:  gyro_x: %f, gyro_y: %f, gyro_z: %f,",  gyro_x, gyro_y, gyro_z);
-    // ROS_INFO("Received angular velocity message:  gyro_sum_x: %f, gyro_sum_y: %f, gyro_sum_z: %f",  gyro_sum_x, gyro_sum_y, gyro_sum_z);
     geometry_msgs::Vector3Stamped imu_processed;
     imu_processed.header.stamp = ros::Time::now();
     imu_processed.header.frame_id = "imu_processed";
@@ -139,7 +134,7 @@ void publish_imu_processed(ros::Publisher* pub, const sl_slamkit_read_imu_proces
 
 
     pub->publish(imu_processed);
-
+    processed_last_ts_ms = PImu_resp.timestamp;
 }
 
 
@@ -199,6 +194,7 @@ int main(int argc, char * argv[])
             ROS_ERROR("Error, cannot connect to slamkit.");
             return -1;
         }
+        ROS_INFO("slamkit deviece open  ok");
     }
     else
     {
