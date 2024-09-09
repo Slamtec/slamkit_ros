@@ -25,6 +25,8 @@ This project need the following dependency:
    mkdir src
    cd src
    git clone <slamkit_ros repo>
+   cd <slamkit_ros>
+   git submodule update --init
    ```
 
 3. Go to the catkin's workspace and running catkin_make to build slamkitNode and slamkitNodeClient
